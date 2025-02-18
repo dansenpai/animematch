@@ -1,9 +1,7 @@
 "use client";
-import Image from "next/image";
 import { useState } from "react";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useSearchHistory } from "@/hooks/useSearchHistory";
-import { StreamingLinks } from "@/components/StreamingLinks";
 import { AnimeCard } from "@/components/AnimeCard";
 import { LoadingCard } from "@/components/LoadingCard";
 import { TasteDiscovery } from "@/components/TasteDiscovery";
@@ -47,6 +45,10 @@ export default function Home() {
   ) => {
     const termToSearch = searchTerm.trim() || searchInput.trim();
     if (!termToSearch) return;
+    // scroll to top
+    if (isExotic) {
+      window.scrollTo(0, 0);
+    }
 
     setIsLoading(true);
     setError("");
@@ -66,8 +68,6 @@ export default function Home() {
       });
 
       const data: ApiResponse = await response.json();
-
-      console.log(data);
 
       if ("error" in data) {
         throw new Error(data.error as string);
@@ -127,12 +127,6 @@ export default function Home() {
       removeFavorite(anime.title);
     } else {
       addFavorite(anime, "watching");
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && searchInput.trim() && !isLoading) {
-      handleSearch();
     }
   };
 

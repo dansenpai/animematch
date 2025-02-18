@@ -29,7 +29,7 @@ function sanitizeTitle(title: string | null): string | null {
   const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
   const excludeList = userList 
-    ? `\nPor favor, NÃO recomende nenhum dos seguintes animes que o usuário já conhece:
+    ? `\nPor favor, É muito importante que você NÃO recomende nenhum dos seguintes animes que o usuário já conhece, mesmo que sejam similares ou prequels, filmes:
       ${userList.map(anime => `- ${anime.title}`).join('\n')}`
     : '';
 
@@ -58,7 +58,7 @@ ${exotic ?
    Foque em obras únicas, cult, antigas ou menos conhecidas que ainda mantenham elementos similares.
    ${excludeList}` 
   : 
-  `Forneça 10 recomendações similares ao anime.
+  `Forneça 10 recomendações similares ao anime, evite animes mainstream, a não ser que realmente seja muito parecido.
    Inclua uma mistura de títulos populares e bem avaliados.
    ${excludeList}`
 }

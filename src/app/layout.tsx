@@ -43,7 +43,7 @@ export default function RootLayout({
                   Buscar
                 </Link>
                 <Link
-                  href="/favoritos"
+                  href="/minha-lista"
                   className="text-gray-200 hover:text-white transition-colors flex items-center gap-1"
                 >
                   <svg
@@ -57,7 +57,7 @@ export default function RootLayout({
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
-                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                    <path d="M12 4v16m8-8H4" />
                   </svg>
                   Minha Lista
                 </Link>

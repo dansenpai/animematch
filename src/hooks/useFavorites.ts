@@ -1,38 +1,36 @@
 import { useState, useEffect } from 'react';
-
-export interface FavoriteAnime {
-  title: string;
-  coverImage?: string;
-  genres: string[];
-  score?: number;
-  reason?: string;
-  streamingLinks?: Array<{
-    name: string;
-    icon: string;
-    url: string;
-  }>;
-}
+import { FavoriteAnime, AnimeStatus } from '@/types/anime';
+import { migrateFavorites } from '@/utils/migrateFavorites';
 
 export function useFavorites() {
   const [favorites, setFavorites] = useState<FavoriteAnime[]>([]);
 
   useEffect(() => {
-    // Carrega favoritos do localStorage quando o componente monta
+    // Executa a migração antes de carregar os favoritos
+    migrateFavorites();
+    
     const savedFavorites = localStorage.getItem('animeFavorites');
     if (savedFavorites) {
-      setFavorites(JSON.parse(savedFavorites));
+      try {
+        setFavorites(JSON.parse(savedFavorites));
+      } catch (error) {
+        console.error('Erro ao carregar favoritos:', error);
+      }
     }
   }, []);
 
-  const addFavorite = (anime: FavoriteAnime) => {
+  const addFavorite = (anime: Omit<FavoriteAnime, 'status'>, status: AnimeStatus) => {
     const newFavorites = [...favorites];
-    const exists = newFavorites.some(fav => fav.title === anime.title);
+    const existingIndex = newFavorites.findIndex(fav => fav.title === anime.title);
     
-    if (!exists) {
-      newFavorites.push(anime);
-      setFavorites(newFavorites);
-      localStorage.setItem('animeFavorites', JSON.stringify(newFavorites));
+    if (existingIndex >= 0) {
+      newFavorites[existingIndex] = { ...newFavorites[existingIndex], status };
+    } else {
+      newFavorites.push({ ...anime, status });
     }
+    
+    setFavorites(newFavorites);
+    localStorage.setItem('animeFavorites', JSON.stringify(newFavorites));
   };
 
   const removeFavorite = (animeTitle: string) => {
@@ -45,5 +43,21 @@ export function useFavorites() {
     return favorites.some(fav => fav.title === animeTitle);
   };
 
-  return { favorites, addFavorite, removeFavorite, isFavorite };
+  const updateAnimeStatus = (animeTitle: string, status: AnimeStatus) => {
+    const newFavorites = favorites.map(fav => 
+      fav.title === animeTitle ? { ...fav, status } : fav
+    );
+    setFavorites(newFavorites);
+    localStorage.setItem('animeFavorites', JSON.stringify(newFavorites));
+  };
+
+  return { 
+    favorites, 
+    addFavorite, 
+    removeFavorite, 
+    isFavorite,
+    updateAnimeStatus,
+    watching: favorites.filter(f => f.status === 'watching'),
+    completed: favorites.filter(f => f.status === 'completed')
+  };
 } 

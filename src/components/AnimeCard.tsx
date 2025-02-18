@@ -27,6 +27,14 @@ export function AnimeCard({
   onFavoriteToggle,
   isFavorite,
 }: AnimeCardProps) {
+  const handleAddToList = () => {
+    if (isFavorite(anime.title)) {
+      onFavoriteToggle(anime); // Remove da lista
+    } else {
+      onFavoriteToggle({ ...anime, status: "watching" }); // Adiciona como "assistindo"
+    }
+  };
+
   return (
     <div className="glass-effect p-4 md:p-6 rounded-lg flex flex-col sm:flex-row gap-4 md:gap-6">
       {anime.coverImage && (
@@ -72,13 +80,13 @@ export function AnimeCard({
             <StreamingLinks links={anime.streamingLinks || []} />
           </div>
           <button
-            onClick={() => onFavoriteToggle(anime)}
+            onClick={handleAddToList}
             className="hover:scale-110 transition-transform"
           >
             {isFavorite(anime.title) ? (
-              <span className="text-2xl">❤️</span>
+              <span className="text-2xl">✓</span>
             ) : (
-              <span className="text-2xl">🤍</span>
+              <span className="text-2xl">+</span>
             )}
           </button>
         </div>

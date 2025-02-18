@@ -120,12 +120,11 @@ export default function Home() {
     }
   };
 
-  const toggleFavorite = (anime: AnimeRecommendation) => {
-    const { title, coverImage, genres, score, reason, streamingLinks } = anime;
-    if (isFavorite(title)) {
-      removeFavorite(title);
+  const handleFavoriteToggle = (anime: any) => {
+    if (isFavorite(anime.title)) {
+      removeFavorite(anime.title);
     } else {
-      addFavorite({ title, coverImage, genres, score, reason, streamingLinks });
+      addFavorite(anime, "watching");
     }
   };
 
@@ -298,7 +297,7 @@ export default function Home() {
               >
                 <AnimeCard
                   anime={rec}
-                  onFavoriteToggle={toggleFavorite}
+                  onFavoriteToggle={handleFavoriteToggle}
                   isFavorite={isFavorite}
                 />
               </div>

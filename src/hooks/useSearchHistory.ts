@@ -1,9 +1,5 @@
 import { useState, useEffect } from 'react';
-
-export interface SearchHistoryItem {
-  title: string;
-  timestamp: number;
-}
+import { SearchHistoryItem } from '@/types/anime';
 
 const MAX_HISTORY_ITEMS = 5;
 
@@ -11,9 +7,16 @@ export function useSearchHistory() {
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
 
   useEffect(() => {
+    // Migração dos dados antigos para o novo formato
     const savedHistory = localStorage.getItem('animeSearchHistory');
     if (savedHistory) {
-      setSearchHistory(JSON.parse(savedHistory));
+      try {
+        const parsed = JSON.parse(savedHistory);
+        setSearchHistory(parsed);
+      } catch (error) {
+        console.error('Erro ao carregar histórico:', error);
+        localStorage.removeItem('animeSearchHistory');
+      }
     }
   }, []);
 

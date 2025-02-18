@@ -1,10 +1,11 @@
 import { getAnimeRecommendations, getTasteBasedRecommendations } from '@/lib/gemini';
 import { getAnimeDetails, getStreamingInfo } from '@/lib/anilist';
 import { NextResponse } from 'next/server';
+import { FavoriteAnime } from '@/types/anime';
 
 export async function POST(request: Request) {
   try {
-    const { animeName, userTaste, exotic } = await request.json();
+    const { animeName, userTaste, exotic, userList } = await request.json();
     
     if (!animeName && !userTaste) {
       return NextResponse.json(
@@ -15,9 +16,9 @@ export async function POST(request: Request) {
 
     let geminiResponse;
     if (userTaste) {
-      geminiResponse = await getTasteBasedRecommendations(userTaste, exotic);
+      geminiResponse = await getTasteBasedRecommendations(userTaste, exotic, userList);
     } else {
-      geminiResponse = await getAnimeRecommendations(animeName, exotic);
+      geminiResponse = await getAnimeRecommendations(animeName, exotic, userList);
     }
     
     // Buscar detalhes adicionais para cada recomendação

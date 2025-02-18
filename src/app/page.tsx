@@ -36,7 +36,7 @@ export default function Home() {
   const [youMean, setYouMean] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [isExotic, setIsExotic] = useState(false);
-  const { userProfile } = useUserProfile();
+  const { userProfile, favorites } = useUserProfile();
 
   const { addFavorite, removeFavorite, isFavorite } = useFavorites();
   const { searchHistory, addToHistory, clearHistory } = useSearchHistory();
@@ -61,6 +61,7 @@ export default function Home() {
         body: JSON.stringify({
           animeName: termToSearch,
           exotic: exotic,
+          userList: favorites,
         }),
       });
 
@@ -101,6 +102,7 @@ export default function Home() {
         body: JSON.stringify({
           userTaste: tasteProfile,
           exotic: isExotic,
+          userList: favorites,
         }),
       });
 

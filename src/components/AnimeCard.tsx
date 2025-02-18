@@ -81,7 +81,7 @@ export function AnimeCard({
           </div>
           <button
             onClick={handleAddToList}
-            className="hover:scale-110 transition-transform"
+            className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-2 px-4 rounded-full hover:scale-110 transition-transform"
           >
             {isFavorite(anime.title) ? (
               <span className="text-2xl">✓</span>

@@ -1,3 +1,4 @@
+import { FavoriteAnime } from "@/types/anime";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 if (!process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
@@ -24,8 +25,13 @@ function sanitizeTitle(title: string | null): string | null {
   return title;
 }
 
-export async function getAnimeRecommendations(animeName: string, exotic: boolean = false) {
+  export async function getAnimeRecommendations(animeName: string, exotic: boolean = false, userList: FavoriteAnime[] = []) {
   const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+  const excludeList = userList 
+    ? `\nPor favor, NÃO recomende nenhum dos seguintes animes que o usuário já conhece:
+      ${userList.map(anime => `- ${anime.title}`).join('\n')}`
+    : '';
 
   const prompt = `Você é um especialista em animes.
 
@@ -49,10 +55,12 @@ SEGUNDA TAREFA - Recomendações:
 ${exotic ? 
   `Forneça 10 recomendações mais EXÓTICAS e MENOS CONHECIDAS que sejam similares ao anime.
    Evite animes populares e mainstream.
-   Foque em obras únicas, cult, antigas ou menos conhecidas que ainda mantenham elementos similares.` 
+   Foque em obras únicas, cult, antigas ou menos conhecidas que ainda mantenham elementos similares.
+   ${excludeList}` 
   : 
   `Forneça 10 recomendações similares ao anime.
-   Inclua uma mistura de títulos populares e bem avaliados.`
+   Inclua uma mistura de títulos populares e bem avaliados.
+   ${excludeList}`
 }
 
 Responda APENAS com este JSON:

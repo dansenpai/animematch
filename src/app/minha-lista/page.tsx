@@ -93,9 +93,7 @@ export default function MinhaLista() {
                     className="text-sm px-3 py-1 rounded-full bg-purple-500/20 
                              hover:bg-purple-500/30 transition-colors"
                   >
-                    {anime.status === "watching"
-                      ? "Marcar como completado"
-                      : "Marcar como assistindo"}
+                    {anime.status === "watching" ? "Assistindo" : "Assistido"}
                   </button>
                   <button
                     onClick={() => removeFavorite(anime.title)}

@@ -82,7 +82,14 @@ Responda APENAS com este JSON:
     
     console.log('Resposta do Gemini:', text);
 
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    // Limpa o texto antes de procurar o JSON
+    const cleanedText = text
+      .replace(/```json/g, '') // Remove marcadores de código JSON
+      .replace(/```/g, '')     // Remove outros marcadores de código
+      .trim();                 // Remove espaços extras
+
+    // Procura pelo JSON usando uma regex mais flexível
+    const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
     const jsonString = jsonMatch ? jsonMatch[0] : null;
 
     if (!jsonString) {
@@ -90,7 +97,13 @@ Responda APENAS com este JSON:
     }
 
     try {
-      const parsed = JSON.parse(jsonString);
+      // Tenta fazer o parse do JSON após limpar caracteres potencialmente problemáticos
+      const sanitizedJsonString = jsonString
+        .replace(/[\u0000-\u001F]+/g, '') // Remove caracteres de controle
+        .replace(/\n\s*\n/g, '\n')        // Remove linhas em branco extras
+        .replace(/\s+/g, ' ');            // Normaliza espaços
+
+      const parsed = JSON.parse(sanitizedJsonString);
       
       if (!parsed.recommendations || !Array.isArray(parsed.recommendations)) {
         throw new Error('Estrutura JSON inválida');

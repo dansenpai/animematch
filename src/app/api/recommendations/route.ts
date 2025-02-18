@@ -1,23 +1,28 @@
-import { getAnimeRecommendations } from '@/lib/gemini';
+import { getAnimeRecommendations, getTasteBasedRecommendations } from '@/lib/gemini';
 import { getAnimeDetails, getStreamingInfo } from '@/lib/anilist';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   try {
-    const { animeName } = await request.json();
+    const { animeName, userTaste, exotic } = await request.json();
     
-    if (!animeName) {
+    if (!animeName && !userTaste) {
       return NextResponse.json(
-        { error: 'Nome do anime é obrigatório' },
+        { error: 'Nome do anime ou perfil de gosto é obrigatório' },
         { status: 400 }
       );
     }
 
-    const recommendations = await getAnimeRecommendations(animeName);
+    let geminiResponse;
+    if (userTaste) {
+      geminiResponse = await getTasteBasedRecommendations(userTaste, exotic);
+    } else {
+      geminiResponse = await getAnimeRecommendations(animeName, exotic);
+    }
     
     // Buscar detalhes adicionais para cada recomendação
     const enrichedRecommendations = await Promise.all(
-      recommendations.recommendations.map(async (rec) => {
+      geminiResponse.recommendations.map(async (rec) => {
         const details = await getAnimeDetails(rec.title);
         return {
           ...rec,
@@ -28,7 +33,10 @@ export async function POST(request: Request) {
       })
     );
 
-    return NextResponse.json({ recommendations: enrichedRecommendations });
+    return NextResponse.json({ 
+      recommendations: enrichedRecommendations,
+      youMean: geminiResponse.youMean
+    });
   } catch (error) {
     console.error('Erro na API:', error);
     return NextResponse.json(

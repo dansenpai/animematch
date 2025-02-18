@@ -27,7 +27,7 @@ export default function RootLayout({
     <html lang="pt">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <div className="min-h-screen flex flex-col">
-          <header className="w-full border-b border-white/10 backdrop-blur-sm fixed top-0 z-50">
+          <header className="w-full border-b border-white/10 bg-black/80 backdrop-blur-xl fixed top-0 z-50 supports-[backdrop-filter]:bg-black/60">
             <nav className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
               <Link
                 href="/"

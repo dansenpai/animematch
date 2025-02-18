@@ -114,4 +114,44 @@ export function getStreamingInfo(details: AnimeDetails | null) {
   });
 
   return Array.from(uniqueServices.values());
+}
+
+export async function findClosestAnime(searchTitle: string): Promise<{ title: string; id: number } | null> {
+  const query = `
+    query ($search: String) {
+      Media(search: $search, type: ANIME) {
+        id
+        title {
+          romaji
+          english
+        }
+      }
+    }
+  `;
+
+  try {
+    const response = await fetch('https://graphql.anilist.co', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query,
+        variables: { search: searchTitle }
+      })
+    });
+
+    const data = await response.json();
+    const anime = data.data.Media;
+
+    if (!anime) return null;
+
+    return {
+      title: anime.title.english || anime.title.romaji,
+      id: anime.id
+    };
+  } catch (error) {
+    console.error('Erro ao buscar anime:', error);
+    return null;
+  }
 } 

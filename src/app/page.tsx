@@ -1,101 +1,205 @@
+"use client";
 import Image from "next/image";
+import { useState } from "react";
+import { useFavorites } from "@/hooks/useFavorites";
+import { useSearchHistory } from "@/hooks/useSearchHistory";
+import { StreamingLinks } from "@/components/StreamingLinks";
+import { AnimeCard } from "@/components/AnimeCard";
+
+interface AnimeRecommendation {
+  title: string;
+  reason: string;
+  genres: string[];
+  coverImage?: string;
+  score?: number;
+  streamingSites?: string[];
+  streamingLinks?: StreamingLink[];
+}
+
+interface RecommendationsResponse {
+  recommendations: AnimeRecommendation[];
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [searchInput, setSearchInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [recommendations, setRecommendations] = useState<AnimeRecommendation[]>(
+    []
+  );
+  const [error, setError] = useState("");
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const { addFavorite, removeFavorite, isFavorite } = useFavorites();
+  const { searchHistory, addToHistory, clearHistory } = useSearchHistory();
+
+  const handleSearch = async (searchTerm: string = searchInput) => {
+    if (!searchTerm.trim()) return;
+
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/recommendations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ animeName: searchTerm }),
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      setRecommendations(data.recommendations);
+      addToHistory(searchTerm);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Erro ao buscar recomendações"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const toggleFavorite = (anime: AnimeRecommendation) => {
+    const { title, coverImage, genres, score, reason, streamingLinks } = anime;
+    if (isFavorite(title)) {
+      removeFavorite(title);
+    } else {
+      addFavorite({ title, coverImage, genres, score, reason, streamingLinks });
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && searchInput.trim() && !isLoading) {
+      handleSearch();
+    }
+  };
+
+  return (
+    <div className="w-full max-w-7xl mx-auto p-4 space-y-8">
+      <div className="text-center space-y-4">
+        <h1 className="text-4xl md:text-5xl font-bold text-white">
+          Descubra Novos Animes
+        </h1>
+        <p className="text-base md:text-lg text-gray-200">
+          Encontre recomendações baseadas nos seus animes favoritos
+        </p>
+      </div>
+
+      <div className="glass-effect rounded-xl p-6 md:p-8 space-y-6 w-full max-w-full mx-auto">
+        <div className="space-y-2">
+          <label className="text-sm text-gray-200 ml-1">
+            Digite um anime que você gosta
+          </label>
+          <input
+            type="text"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Ex: Naruto, One Piece, Death Note..."
+            className="w-full p-4 text-lg rounded-lg bg-white/10 border border-white/20 
+                     focus:ring-2 focus:ring-purple-500 focus:border-transparent
+                     text-white placeholder-gray-400 transition-all"
+          />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+
+        <button
+          onClick={() => handleSearch()}
+          disabled={isLoading || !searchInput.trim()}
+          className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 
+                   hover:from-indigo-500 hover:to-purple-500 
+                   text-white font-semibold py-4 px-6 rounded-lg 
+                   transition-all transform hover:scale-[1.02] active:scale-[0.98]
+                   disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          {isLoading ? "Buscando..." : "Encontrar Recomendações"}
+        </button>
+
+        {searchHistory.length > 0 && (
+          <div className="pt-4 border-t border-white/10">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-gray-400">Buscas recentes</span>
+              <button
+                onClick={clearHistory}
+                className="text-xs text-gray-400 hover:text-white transition-colors"
+              >
+                Limpar histórico
+              </button>
+            </div>
+            <div className="overflow-x-auto pb-2 -mx-1 px-1">
+              <div className="flex gap-2 min-w-min">
+                {searchHistory.map((item) => (
+                  <button
+                    key={item.timestamp}
+                    onClick={() => {
+                      setSearchInput(item.title);
+                      handleSearch(item.title);
+                    }}
+                    className="px-3 py-1.5 text-sm rounded-lg bg-white/5 
+                             hover:bg-white/10 transition-colors text-gray-200
+                             flex items-center gap-2 group whitespace-nowrap"
+                  >
+                    <span>{item.title}</span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="opacity-50 group-hover:opacity-100 transition-opacity"
+                    >
+                      <polyline points="9 10 4 15 9 20" />
+                      <path d="M20 4v7a4 4 0 0 1-4 4H4" />
+                    </svg>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {error && <div className="text-red-400 text-center w-full">{error}</div>}
+
+      {recommendations.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+          {recommendations.map((rec, index) => (
+            <AnimeCard
+              key={index}
+              anime={rec}
+              onFavoriteToggle={toggleFavorite}
+              isFavorite={isFavorite}
+            />
+          ))}
+        </div>
+      )}
+
+      <div className="text-center py-6">
+        <p className="text-sm text-gray-400 max-w-lg mx-auto flex items-center justify-center gap-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-purple-400"
+          >
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+          </svg>
+          Adicione animes à sua lista para não perder nenhuma recomendação
+        </p>
+      </div>
     </div>
   );
 }

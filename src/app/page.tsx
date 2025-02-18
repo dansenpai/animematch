@@ -45,10 +45,6 @@ export default function Home() {
   ) => {
     const termToSearch = searchTerm.trim() || searchInput.trim();
     if (!termToSearch) return;
-    // scroll to top
-    if (isExotic) {
-      window.scrollTo(0, 0);
-    }
 
     setIsLoading(true);
     setError("");
@@ -80,6 +76,9 @@ export default function Home() {
         addToHistory(termToSearch);
       } else {
         addToHistory(data.youMean);
+      }
+      if (isExotic) {
+        window.scrollTo(0, 0);
       }
     } catch (err) {
       setError(

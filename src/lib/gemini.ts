@@ -34,46 +34,48 @@ function sanitizeTitle(title: string | null): string | null {
     : '';
 
   const prompt = `Você é um especialista em animes.
+    PRIMEIRA TAREFA - Correção do título:
+    Analise o título fornecido: "${animeName}"
 
-PRIMEIRA TAREFA - Correção do título:
-Analise o título fornecido: "${animeName}"
+    Se este título tiver QUALQUER erro (mesmo pequeno) ou variação do nome oficial, você DEVE fornecer a correção.
+    Por exemplo:
+    - "Narito" -> youMean: "Naruto"
+    - "atack on titan" -> youMean: "Attack on Titan"
+    - "death noto" -> youMean: "Death Note"
+    - "Full Metal Alchemist" -> youMean: "Fullmetal Alchemist"
+    - "Kimetsu" -> youMean: "Kimetsu no Yaiba"
+    - "SAO" -> youMean: "Sword Art Online"
+    - "DBZ" -> youMean: "Dragon Ball Z"
 
-Se este título tiver QUALQUER erro (mesmo pequeno) ou variação do nome oficial, você DEVE fornecer a correção.
-Por exemplo:
-- "Narito" -> youMean: "Naruto"
-- "atack on titan" -> youMean: "Attack on Titan"
-- "death noto" -> youMean: "Death Note"
-- "Full Metal Alchemist" -> youMean: "Fullmetal Alchemist"
-- "Kimetsu" -> youMean: "Kimetsu no Yaiba"
-- "SAO" -> youMean: "Sword Art Online"
-- "DBZ" -> youMean: "Dragon Ball Z"
+    IMPORTANTE: Se o título estiver com qualquer erro de digitação, capitalização incorreta, abreviação ou incompleto, você DEVE corrigi-lo no campo youMean.
+    Se o título estiver 100% correto, use null.
 
-IMPORTANTE: Se o título estiver com qualquer erro de digitação, capitalização incorreta, abreviação ou incompleto, você DEVE corrigi-lo no campo youMean.
-Se o título estiver 100% correto, use null.
-
-SEGUNDA TAREFA - Recomendações:
-${exotic ? 
-  `Forneça 10 recomendações mais EXÓTICAS e MENOS CONHECIDAS que sejam similares ao anime.
-   Evite animes populares e mainstream.
-   Foque em obras únicas, cult, antigas ou menos conhecidas que ainda mantenham elementos similares.
-   ${excludeList}` 
-  : 
-  `Forneça 10 recomendações similares ao anime, evite animes mainstream, a não ser que realmente seja muito parecido.
-   Inclua uma mistura de títulos populares e bem avaliados.
-   ${excludeList}`
-}
-
-Responda APENAS com este JSON:
-{
-  "youMean": "Título corrigido ou null se estiver perfeito",
-  "recommendations": [
-    {
-      "title": "Nome do Anime",
-      "reason": "Motivo da recomendação",
-      "genres": ["genero1", "genero2"]
+    SEGUNDA TAREFA - Recomendações:
+    ${exotic ? 
+      `Forneça 10 recomendações mais EXÓTICAS e MENOS CONHECIDAS que sejam similares ao anime.
+      Evite animes populares e mainstream.
+      Foque em obras únicas, cult, antigas ou menos conhecidas que ainda mantenham elementos similares.
+      ${excludeList}` 
+      : 
+      `Forneça 10 recomendações similares ao anime, evite animes mainstream, a não ser que realmente seja muito parecido.
+      Inclua uma mistura de títulos populares e bem avaliados.
+      ${excludeList}`
     }
-  ]
-}`;
+
+    Responda APENAS com este JSON:
+    {
+      "youMean": "Título corrigido ou null se estiver perfeito",
+      "recommendations": [
+        {
+          "title": "Nome do Anime",
+          "reason": "Motivo da recomendação",
+          "genres": ["genero1", "genero2"]
+        }
+      ]
+    }
+      
+    caso não tenha a quantidade de recomendacoes, forneça o maximo possivel, sem repetir os animes já recomendados.
+  `;
 
   try {
     const result = await model.generateContent(prompt);
